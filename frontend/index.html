@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Red vs Blue · AI Security Combat Simulation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="brand">
+      <h1><span class="w-red">RED</span> <span class="vs">vs</span> <span class="w-blue">BLUE</span></h1>
+      <p class="subtitle">AI SECURITY COMBAT SIMULATION</p>
+    </div>
+    <div class="status">
+      <span class="round-indicator" id="round-indicator">ROUND 00 / 10</span>
+      <span class="pill" id="match-status" data-state="ready">READY</span>
+      <button class="icon-btn" id="info-btn" type="button" aria-label="How the match works">i</button>
+    </div>
+  </header>
+  <p class="mode-line" id="mode-badge">Connecting…</p>
+
+  <!-- Battle arena: Red | Zone | Blue -->
+  <main class="arena">
+
+    <section class="team team-red" id="red-panel" aria-labelledby="red-name">
+      <div class="portrait">
+        <img src="/static/assets/red-mech.png" alt="Red AI attacker mech" />
+      </div>
+      <div class="team-head">
+        <svg class="emblem" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2 L22 12 L12 22 L2 12 Z" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          <circle cx="12" cy="12" r="3" fill="currentColor"/>
+        </svg>
+        <div>
+          <h2 id="red-name">Red AI</h2>
+          <p class="role">Attacker · generates jailbreak attempts</p>
+        </div>
+      </div>
+      <div class="hp-row">
+        <div class="hp-wrap"><div class="hp-fill" id="red-hp" role="meter" aria-label="Red AI health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"></div></div>
+        <span class="hp-text" id="red-hp-text">100 / 100</span>
+      </div>
+      <div class="status-row">
+        <span class="label">Attack status</span>
+        <span class="value" id="red-status">Standing by</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="red-success">0</b><span>Successful attacks</span></div>
+        <div class="stat"><b id="red-blocked">0</b><span>Blocked attacks</span></div>
+      </div>
+    </section>
+
+    <section class="zone" id="zone" aria-label="Battle zone">
+      <div class="lane" id="lane">
+        <div class="lane-label lane-label-red">RED</div>
+        <div class="lane-label lane-label-blue">BLUE</div>
+        <div class="barrier" id="barrier"></div>
+        <div class="projectile" id="projectile"></div>
+        <div class="burst" id="burst"></div>
+        <div class="impact" id="impact"></div>
+        <div class="callout" id="callout"></div>
+      </div>
+
+      <div class="round-card" id="round-card" aria-live="polite">
+        <div class="rc-top">
+          <span class="rc-round" id="rc-round">READY</span>
+          <span class="rc-state" id="rc-state">PRESS START BATTLE</span>
+        </div>
+        <h3 class="rc-attack" id="rc-attack">Blue AI is ready to defend</h3>
+        <p class="rc-prompt" id="rc-prompt"></p>
+        <dl class="rc-grid">
+          <div><dt>Defense</dt><dd id="rc-defense">—</dd></div>
+          <div><dt>Outcome</dt><dd id="rc-outcome">—</dd></div>
+          <div><dt>Damage</dt><dd id="rc-damage">—</dd></div>
+        </dl>
+        <p class="rc-message" id="rc-message"></p>
+      </div>
+
+      <div class="summary" id="summary" hidden>
+        <p class="summary-kicker">MATCH COMPLETE</p>
+        <h3 class="summary-winner" id="summary-winner">—</h3>
+        <div class="summary-hp">
+          <div><span>Red AI</span><b id="sum-red-hp">0 HP</b></div>
+          <div><span>Blue AI</span><b id="sum-blue-hp">0 HP</b></div>
+        </div>
+        <dl class="summary-stats">
+          <div><dt>Total rounds</dt><dd id="sum-rounds">0</dd></div>
+          <div><dt>Attacks blocked</dt><dd id="sum-blocked">0</dd></div>
+          <div><dt>Successful attacks</dt><dd id="sum-bypassed">0</dd></div>
+          <div><dt>Red HP lost</dt><dd id="sum-red-lost">0</dd></div>
+          <div><dt>Blue HP lost</dt><dd id="sum-blue-lost">0</dd></div>
+        </dl>
+        <div class="summary-actions">
+          <button class="btn btn-primary" id="sum-rematch" type="button">REMATCH</button>
+          <button class="btn btn-ghost" id="sum-report" type="button">VIEW FULL REPORT</button>
+        </div>
+      </div>
+
+      <p class="zone-error" id="zone-error" role="alert" hidden></p>
+    </section>
+
+    <section class="team team-blue" id="blue-panel" aria-labelledby="blue-name">
+      <div class="portrait">
+        <img src="/static/assets/blue-mech.png" alt="Blue AI defender mech" />
+      </div>
+      <div class="team-head">
+        <svg class="emblem" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2 L20 5 V11 C20 16 16.5 20 12 22 C7.5 20 4 16 4 11 V5 Z" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        </svg>
+        <div>
+          <h2 id="blue-name">Blue AI</h2>
+          <p class="role">Defender · Foundry guardrails and Prompt Shields</p>
+        </div>
+      </div>
+      <div class="hp-row">
+        <div class="hp-wrap"><div class="hp-fill" id="blue-hp" role="meter" aria-label="Blue AI health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"></div></div>
+        <span class="hp-text" id="blue-hp-text">100 / 100</span>
+      </div>
+      <div class="status-row">
+        <span class="label">Defense status</span>
+        <span class="value" id="blue-status">Standing by</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="blue-blocked">0</b><span>Attacks blocked</span></div>
+        <div class="stat"><b id="blue-bypassed">0</b><span>Bypassed defenses</span></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Round tracker -->
+  <ol class="tracker" id="tracker" aria-label="Round progress"></ol>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn btn-primary" id="primary-btn" type="button">START BATTLE</button>
+    <button class="btn btn-ghost" id="report-btn" type="button" disabled>VIEW MATCH REPORT</button>
+  </div>
+
+  <!-- Event log -->
+  <section class="log-panel" aria-labelledby="log-title">
+    <header class="log-head">
+      <h2 id="log-title">BATTLE LOG</h2>
+      <div class="log-tools">
+        <label class="filter">
+          <span class="sr-only">Show</span>
+          <select id="log-filter">
+            <option value="all">All rounds</option>
+            <option value="blocked">Blocked only</option>
+            <option value="bypassed">Bypassed only</option>
+          </select>
+        </label>
+        <span class="log-count" id="log-count">0 events</span>
+      </div>
+    </header>
+    <div class="log-cols" aria-hidden="true">
+      <span>Round</span><span>Attack</span><span>Defense</span><span>Outcome</span><span>Damage</span>
+    </div>
+    <div class="log" id="log" role="log" aria-live="off">
+      <p class="log-empty" id="log-empty">No battle yet. Press START BATTLE.</p>
+    </div>
+  </section>
+
+</div>
+
+<!-- Full match report -->
+<div class="backdrop" id="report-modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="report-title">
+    <header class="modal-head">
+      <h2 id="report-title">MATCH REPORT</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Close report">×</button>
+    </header>
+    <div class="modal-body" id="report-body"></div>
+  </div>
+</div>
+
+<!-- Rules -->
+<div class="backdrop" id="info-modal" hidden>
+  <div class="modal modal-narrow" role="dialog" aria-modal="true" aria-labelledby="info-title">
+    <header class="modal-head">
+      <h2 id="info-title">HOW THE MATCH WORKS</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Close rules">×</button>
+    </header>
+    <div class="modal-body prose">
+      <p>Red AI launches one attack per round. Blue AI runs it through its defenses in order:</p>
+      <ul>
+        <li><b>Custom blocklist</b> stops terms the app never allows.</li>
+        <li><b>Prompt Shields</b> detects jailbreaks in the user prompt.</li>
+        <li><b>Prompt Shields (documents)</b> detects instructions hidden in pasted text.</li>
+        <li><b>Foundry content filter</b> blocks harmful content.</li>
+      </ul>
+      <p>Each blocked attack costs Red AI health. Each attack that gets through costs Blue AI health. The server decides the winner from the remaining health.</p>
+    </div>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
