@@ -760,6 +760,10 @@
 .verdict-action {
   font-size: 13px;
 }
+.verdict .btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
 
 .source-pill {
   display: inline-block;
